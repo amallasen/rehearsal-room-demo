@@ -6,6 +6,8 @@ Practice interview answers that are clear and concise. Type or dictate your answ
 
 **Página / Page:** https://amallasen.github.io/rehearsal-room-demo/
 
+**Guía / Guide:** https://amallasen.github.io/rehearsal-room-demo/guia.html (qué es, cómo funciona, flujo de datos, prompts y preguntas frecuentes, con buscador / what it is, how it works, data flow, prompts and FAQ, searchable)
+
 ## Cómo evalúa / How it evaluates
 
 Al abrirla eliges una de tres opciones (se puede cambiar desde el botón IA):
@@ -23,7 +25,7 @@ Al abrirla eliges una de tres opciones (se puede cambiar desde el botón IA):
 
 ## Notas
 
-- Cuatro niveles de práctica (junior, intermedio, senior y directivo) y dos tipos de puesto (individual contributor o people manager), cada combinación con sus preguntas y su propio historial. La evaluación se adapta al nivel: a un directivo se le pide síntesis y decisión, a un junior claridad y ownership. Preguntas en español e inglés. Con IA puedes pegar una oferta de empleo: la IA detecta nivel y tipo de puesto (puedes corregirlos), extrae los requisitos clave y genera preguntas ligadas a cada uno. La evaluación se hace contra ese perfil, con un comentario de encaje con la oferta, y el panel de progreso muestra qué requisitos has practicado.
+- Cuatro niveles de práctica (junior, intermedio, senior y directivo) y dos tipos de puesto (individual contributor o people manager), cada combinación con sus preguntas y su propio historial. La evaluación se adapta al nivel: a un directivo se le pide síntesis y decisión, a un junior claridad y ownership. Preguntas en español e inglés. Con IA puedes pegar una oferta de empleo: primero la IA la analiza y te muestra el nivel y el tipo de puesto que ha detectado (los botones los marcan y puedes cambiarlos), y luego genera preguntas ligadas a cada requisito clave. La evaluación se hace contra ese perfil, con un comentario de encaje con la oferta, y el panel de progreso muestra qué requisitos has practicado.
 - Si un modelo da error, escribe en el campo el nombre actual del modelo en el panel de tu proveedor.
 - Archivo único (`index.html`), sin dependencias salvo las tipografías de Google Fonts.
 
