@@ -23,7 +23,7 @@ Al abrirla eliges una de tres opciones (se puede cambiar desde el botón IA):
 
 ## Notas
 
-- Preguntas de ejemplo genéricas, en español e inglés. Con IA puedes pegar una oferta de empleo y generar preguntas para ese puesto.
+- Cuatro niveles de práctica (junior, intermedio, senior y directivo), cada uno con sus preguntas y su propio historial. La evaluación se adapta al nivel: a un directivo se le pide síntesis y decisión, a un junior claridad y ownership. Preguntas en español e inglés. Con IA puedes pegar una oferta de empleo y generar preguntas para ese puesto; la IA detecta el nivel del puesto.
 - Si un modelo da error, escribe en el campo el nombre actual del modelo en el panel de tu proveedor.
 - Archivo único (`index.html`), sin dependencias salvo las tipografías de Google Fonts.
 

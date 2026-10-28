@@ -456,52 +456,146 @@
 (function(){
   "use strict";
 
-  // ---------- Demo track: generic behavioral questions (bilingual) ----------
+  // ---------- Level tracks: generic behavioral questions by seniority (bilingual) ----------
   function q(en, es){ return { en: en, es: es }; }
   function bi(es, en){ return { es: es, en: en }; }
-  var DEMO_PRESET = {
-    id: "demo-senior-role",
-    name: "Demo · Senior business role",
-    canonicalLang: "en",
-    createdAt: 0,
-    blocks: [
-      { id:1, label:bi("1 · Motivación y encaje","1 · Motivation & fit"), focus:bi("Interés genuino por el puesto, iniciativa y autoconocimiento.","Genuine interest in the role, initiative and self-awareness."),
-        questions:[
-          q("What excites you most about this role?","¿Qué es lo que más te motiva de este puesto?"),
-          q("Tell me about a time you took the initiative to solve a problem nobody had asked you to solve.","Cuéntame una ocasión en la que tomaste la iniciativa para resolver un problema que nadie te había pedido resolver."),
-          q("What is the achievement you are most proud of, and why?","¿Cuál es el logro del que estás más orgulloso y por qué?"),
-          q("Tell me about feedback that was hard to hear. What did you do with it?","Cuéntame un feedback que te costó escuchar. ¿Qué hiciste con él?")
-        ] },
-      { id:2, label:bi("2 · Ejecución y resultados","2 · Execution & results"), focus:bi("Prioridades, ownership de procesos y resultados medibles.","Priorities, process ownership and measurable results."),
-        questions:[
-          q("Describe a project that went off track. What did you do?","Describe un proyecto que se desvió del plan. ¿Qué hiciste?"),
-          q("How do you decide what to prioritize when everything feels urgent?","¿Cómo decides qué priorizar cuando todo parece urgente?"),
-          q("Tell me about a process you improved. What changed as a result?","Cuéntame un proceso que mejoraste. ¿Qué cambió como resultado?"),
-          q("Give an example of a decision you made with incomplete information.","Pon un ejemplo de una decisión que tomaste con información incompleta.")
-        ] },
-      { id:3, label:bi("3 · Stakeholders e influencia","3 · Stakeholders & influence"), focus:bi("Construir apoyo, gestionar desacuerdos y adaptar el mensaje a cada audiencia.","Building support, handling disagreement and adapting the message to each audience."),
-        questions:[
-          q("Tell me about a time you disagreed with a senior stakeholder. How did you handle it?","Cuéntame una ocasión en la que no estuviste de acuerdo con un stakeholder senior. ¿Cómo lo gestionaste?"),
-          q("How do you get buy-in from people who do not report to you?","¿Cómo consigues el apoyo de personas que no dependen de ti?"),
-          q("Describe a difficult conversation you had to lead. What was the outcome?","Describe una conversación difícil que tuviste que liderar. ¿Cuál fue el resultado?"),
-          q("How do you adapt your message when you present to executives rather than to your own team?","¿Cómo adaptas tu mensaje cuando presentas a directivos en lugar de a tu propio equipo?")
-        ] },
-      { id:4, label:bi("4 · Liderazgo y equipos","4 · Leadership & teams"), focus:bi("Desarrollo de personas, confianza y gestión del bajo rendimiento.","Developing people, building trust and handling underperformance."),
-        questions:[
-          q("Tell me how you develop the people on your team.","Cuéntame cómo desarrollas a las personas de tu equipo."),
-          q("Describe a time you had to deliver bad news to your team or your manager.","Describe una ocasión en la que tuviste que dar malas noticias a tu equipo o a tu jefe."),
-          q("How do you handle someone who is underperforming?","¿Cómo gestionas a alguien que no está rindiendo?"),
-          q("What is your approach to building trust in a new team?","¿Cuál es tu enfoque para generar confianza en un equipo nuevo?")
-        ] },
-      { id:5, label:bi("5 · Análisis y comunicación","5 · Analysis & communication"), focus:bi("Resolver problemas nuevos, usar datos para decidir y explicar con claridad.","Solving new problems, using data to decide and explaining clearly."),
-        questions:[
-          q("Walk me through how you approach a complex problem you have never seen before.","Cuéntame cómo abordas un problema complejo que nunca has visto."),
-          q("Tell me about a time data changed your mind.","Cuéntame una ocasión en la que los datos te hicieron cambiar de opinión."),
-          q("How do you explain a complex topic to someone with no background in it?","¿Cómo explicas un tema complejo a alguien que no tiene conocimientos previos?"),
-          q("Tell me about a mistake you made at work. What did you learn?","Cuéntame un error que cometiste en el trabajo. ¿Qué aprendiste?")
-        ] }
-    ]
-  };
+  function blk(id, lab, foc, qs){
+    return { id: id, label: bi(lab[0], lab[1]), focus: bi(foc[0], foc[1]), questions: qs.map(function(x){ return q(x[0], x[1]); }) };
+  }
+  function preset(id, level, order, nameEs, nameEn, blocks){
+    return { id: id, level: level, name: nameEn, nameLoc: { es: nameEs, en: nameEn }, canonicalLang: "en", createdAt: order, blocks: blocks };
+  }
+  var PRESETS = [
+    preset("demo-junior", "junior", 0, "Nivel junior", "Junior level", [
+      blk(1, ["1 · Motivación y ganas de aprender","1 · Motivation & eagerness to learn"], ["Interés por el puesto, ganas de aprender y primeras experiencias.","Interest in the role, eagerness to learn and early experiences."], [
+        ["Why are you interested in this role and this field?","¿Por qué te interesa este puesto y este sector?"],
+        ["Tell me about a project, at work or at university, that you are proud of.","Cuéntame un proyecto, del trabajo o de la universidad, del que estés orgulloso."],
+        ["What are you hoping to learn in your first year?","¿Qué esperas aprender en tu primer año?"],
+        ["Tell me about a time you had to learn something new quickly.","Cuéntame una ocasión en la que tuviste que aprender algo nuevo rápidamente."]
+      ]),
+      blk(2, ["2 · Organización y resultados","2 · Organization & results"], ["Organizar tu propio trabajo, cumplir plazos y resolver problemas del día a día.","Organizing your own work, meeting deadlines and solving everyday problems."], [
+        ["Tell me about a time you had a tight deadline. How did you organize yourself?","Cuéntame una ocasión en la que tuviste un plazo muy ajustado. ¿Cómo te organizaste?"],
+        ["Describe a task that went wrong. What did you do next?","Describe una tarea que te salió mal. ¿Qué hiciste después?"],
+        ["How do you decide what to work on first when you have several tasks?","¿Cómo decides por cuál empezar cuando tienes varias tareas?"],
+        ["Give an example of a time you went beyond what was asked.","Pon un ejemplo de una ocasión en la que fuiste más allá de lo que te pedían."]
+      ]),
+      blk(3, ["3 · Colaboración y comunicación","3 · Collaboration & communication"], ["Trabajar con otros, pedir ayuda y comunicar con claridad.","Working with others, asking for help and communicating clearly."], [
+        ["Tell me about a time you disagreed with a teammate. How did you handle it?","Cuéntame una ocasión en la que no estuviste de acuerdo con un compañero. ¿Cómo lo gestionaste?"],
+        ["How do you ask for help when you are stuck?","¿Cómo pides ayuda cuando te quedas bloqueado?"],
+        ["Describe a time you had to explain something to someone who did not know the topic.","Describe una ocasión en la que tuviste que explicar algo a alguien que no conocía el tema."],
+        ["Tell me about feedback you received and what you changed afterward.","Cuéntame un feedback que recibiste y qué cambiaste después."]
+      ]),
+      blk(4, ["4 · Trabajo en equipo","4 · Teamwork"], ["Aportar al equipo, apoyar a otros y construir buenas relaciones.","Contributing to the team, supporting others and building good relationships."], [
+        ["Tell me about a team you enjoyed working in. What was your role?","Cuéntame un equipo en el que disfrutaste trabajando. ¿Cuál era tu papel?"],
+        ["How do you react when a teammate is not pulling their weight?","¿Cómo reaccionas cuando un compañero no está aportando lo que debería?"],
+        ["Describe a time you supported a colleague.","Describe una ocasión en la que apoyaste a un compañero."],
+        ["What kind of manager helps you do your best work?","¿Qué tipo de jefe te ayuda a dar lo mejor de ti?"]
+      ]),
+      blk(5, ["5 · Análisis y futuro","5 · Analysis & future"], ["Abordar problemas nuevos, usar datos básicos y proyectar tu crecimiento.","Approaching new problems, using basic data and projecting your growth."], [
+        ["Walk me through how you would approach a problem you have never seen.","Cuéntame cómo abordarías un problema que nunca has visto."],
+        ["Tell me about a time you used data or research to answer a question.","Cuéntame una ocasión en la que usaste datos o investigación para responder una pregunta."],
+        ["Tell me about a mistake you made and what you learned.","Cuéntame un error que cometiste y qué aprendiste."],
+        ["Where do you see yourself in three years?","¿Dónde te ves dentro de tres años?"]
+      ])
+    ]),
+    preset("demo-mid", "mid", 1, "Nivel intermedio", "Mid level", [
+      blk(1, ["1 · Motivación y ownership","1 · Motivation & ownership"], ["Por qué das este paso, qué has logrado y cuánta iniciativa muestras.","Why you are making this move, what you have achieved and how much initiative you show."], [
+        ["What made you want to take this step now?","¿Qué te ha hecho querer dar este paso ahora?"],
+        ["Tell me about a result you delivered that you are proud of. What was your part?","Cuéntame un resultado que lograste y del que estés orgulloso. ¿Cuál fue tu parte?"],
+        ["Describe a time you took ownership of something outside your job description.","Describe una ocasión en la que asumiste algo que no era de tu puesto."],
+        ["Tell me about feedback that was hard to hear. What did you change?","Cuéntame un feedback que te costó escuchar. ¿Qué cambiaste?"]
+      ]),
+      blk(2, ["2 · Ejecución y resultados","2 · Execution & results"], ["Gestionar proyectos propios, priorizar y medir el resultado.","Managing your own projects, prioritizing and measuring the result."], [
+        ["Describe a project you led from start to finish. How did you measure success?","Describe un proyecto que lideraste de principio a fin. ¿Cómo mediste el éxito?"],
+        ["Tell me about a time a project went off track. How did you recover it?","Cuéntame una ocasión en que un proyecto se desvió. ¿Cómo lo recuperaste?"],
+        ["How do you prioritize when two people ask you for conflicting things?","¿Cómo priorizas cuando dos personas te piden cosas incompatibles?"],
+        ["Tell me about a process you improved. What was the effect?","Cuéntame un proceso que mejoraste. ¿Qué efecto tuvo?"]
+      ]),
+      blk(3, ["3 · Stakeholders e influencia","3 · Stakeholders & influence"], ["Colaborar entre áreas y conseguir apoyo sin autoridad formal.","Collaborating across teams and getting support without formal authority."], [
+        ["Tell me about a time you had to get another team to change their priorities.","Cuéntame una ocasión en la que tuviste que lograr que otro equipo cambiara sus prioridades."],
+        ["How do you handle a stakeholder who keeps changing the requirements?","¿Cómo gestionas a un stakeholder que cambia los requisitos constantemente?"],
+        ["Describe a disagreement with a manager. How did you handle it?","Describe un desacuerdo con un jefe. ¿Cómo lo gestionaste?"],
+        ["How do you keep people informed on a project without overloading them?","¿Cómo mantienes informadas a las personas de un proyecto sin saturarlas?"]
+      ]),
+      blk(4, ["4 · Colaboración e impacto en el equipo","4 · Collaboration & team impact"], ["Mentoría informal, compartir conocimiento y confianza en el equipo.","Informal mentoring, sharing knowledge and building trust in the team."], [
+        ["Tell me about a time you helped a colleague grow.","Cuéntame una ocasión en la que ayudaste a crecer a un compañero."],
+        ["How do you share knowledge so the team does not depend on you?","¿Cómo compartes conocimiento para que el equipo no dependa de ti?"],
+        ["Describe a conflict within your team and your role in resolving it.","Describe un conflicto dentro de tu equipo y tu papel para resolverlo."],
+        ["What do you do when you disagree with a team decision that has already been made?","¿Qué haces cuando no estás de acuerdo con una decisión de equipo ya tomada?"]
+      ]),
+      blk(5, ["5 · Análisis y comunicación","5 · Analysis & communication"], ["Usar datos para recomendar, decidir con incertidumbre y convencer.","Using data to recommend, deciding under uncertainty and persuading."], [
+        ["Tell me about a time data changed your recommendation.","Cuéntame una ocasión en la que los datos cambiaron tu recomendación."],
+        ["How do you present a recommendation to someone who is skeptical?","¿Cómo presentas una recomendación a alguien escéptico?"],
+        ["Describe a decision you made with incomplete information.","Describe una decisión que tomaste con información incompleta."],
+        ["Where do you want to grow in the next two to three years?","¿Dónde quieres crecer en los próximos dos o tres años?"]
+      ])
+    ]),
+    preset("demo-senior-role", "senior", 2, "Nivel senior", "Senior level", [
+      blk(1, ["1 · Motivación y encaje","1 · Motivation & fit"], ["Interés genuino por el puesto, iniciativa y autoconocimiento.","Genuine interest in the role, initiative and self-awareness."], [
+        ["What excites you most about this role?","¿Qué es lo que más te motiva de este puesto?"],
+        ["Tell me about a time you took the initiative to solve a problem nobody had asked you to solve.","Cuéntame una ocasión en la que tomaste la iniciativa para resolver un problema que nadie te había pedido resolver."],
+        ["What is the achievement you are most proud of, and why?","¿Cuál es el logro del que estás más orgulloso y por qué?"],
+        ["Tell me about feedback that was hard to hear. What did you do with it?","Cuéntame un feedback que te costó escuchar. ¿Qué hiciste con él?"]
+      ]),
+      blk(2, ["2 · Ejecución y resultados","2 · Execution & results"], ["Prioridades, ownership de procesos y resultados medibles.","Priorities, process ownership and measurable results."], [
+        ["Describe a project that went off track. What did you do?","Describe un proyecto que se desvió del plan. ¿Qué hiciste?"],
+        ["How do you decide what to prioritize when everything feels urgent?","¿Cómo decides qué priorizar cuando todo parece urgente?"],
+        ["Tell me about a process you improved. What changed as a result?","Cuéntame un proceso que mejoraste. ¿Qué cambió como resultado?"],
+        ["Give an example of a decision you made with incomplete information.","Pon un ejemplo de una decisión que tomaste con información incompleta."]
+      ]),
+      blk(3, ["3 · Stakeholders e influencia","3 · Stakeholders & influence"], ["Construir apoyo, gestionar desacuerdos y adaptar el mensaje a cada audiencia.","Building support, handling disagreement and adapting the message to each audience."], [
+        ["Tell me about a time you disagreed with a senior stakeholder. How did you handle it?","Cuéntame una ocasión en la que no estuviste de acuerdo con un stakeholder senior. ¿Cómo lo gestionaste?"],
+        ["How do you get buy-in from people who do not report to you?","¿Cómo consigues el apoyo de personas que no dependen de ti?"],
+        ["Describe a difficult conversation you had to lead. What was the outcome?","Describe una conversación difícil que tuviste que liderar. ¿Cuál fue el resultado?"],
+        ["How do you adapt your message when you present to executives rather than to your own team?","¿Cómo adaptas tu mensaje cuando presentas a directivos en lugar de a tu propio equipo?"]
+      ]),
+      blk(4, ["4 · Liderazgo y equipos","4 · Leadership & teams"], ["Desarrollo de personas, confianza y gestión del bajo rendimiento.","Developing people, building trust and handling underperformance."], [
+        ["Tell me how you develop the people on your team.","Cuéntame cómo desarrollas a las personas de tu equipo."],
+        ["Describe a time you had to deliver bad news to your team or your manager.","Describe una ocasión en la que tuviste que dar malas noticias a tu equipo o a tu jefe."],
+        ["How do you handle someone who is underperforming?","¿Cómo gestionas a alguien que no está rindiendo?"],
+        ["What is your approach to building trust in a new team?","¿Cuál es tu enfoque para generar confianza en un equipo nuevo?"]
+      ]),
+      blk(5, ["5 · Análisis y comunicación","5 · Analysis & communication"], ["Resolver problemas nuevos, usar datos para decidir y explicar con claridad.","Solving new problems, using data to decide and explaining clearly."], [
+        ["Walk me through how you approach a complex problem you have never seen before.","Cuéntame cómo abordas un problema complejo que nunca has visto."],
+        ["Tell me about a time data changed your mind.","Cuéntame una ocasión en la que los datos te hicieron cambiar de opinión."],
+        ["How do you explain a complex topic to someone with no background in it?","¿Cómo explicas un tema complejo a alguien que no tiene conocimientos previos?"],
+        ["Tell me about a mistake you made at work. What did you learn?","Cuéntame un error que cometiste en el trabajo. ¿Qué aprendiste?"]
+      ])
+    ]),
+    preset("demo-exec", "exec", 3, "Nivel directivo", "Executive level", [
+      blk(1, ["1 · Visión y encaje","1 · Vision & fit"], ["Por qué este rol, qué visión traes y qué dejas tras de ti.","Why this role, what vision you bring and what you leave behind."], [
+        ["Why this company, and why now?","¿Por qué esta empresa y por qué ahora?"],
+        ["What would you want to have changed in this organization after your first year?","¿Qué te gustaría haber cambiado en esta organización tras tu primer año?"],
+        ["Tell me about the decision in your career you are most proud of, and what it cost.","Cuéntame la decisión de tu carrera de la que estás más orgulloso y qué te costó."],
+        ["What is the biggest professional mistake you have made as a leader?","¿Cuál ha sido tu mayor error profesional como líder?"]
+      ]),
+      blk(2, ["2 · Estrategia y resultados","2 · Strategy & results"], ["Decisiones de alto impacto, trade-offs y resultados de negocio.","High-impact decisions, trade-offs and business results."], [
+        ["Describe a strategic decision where you had to choose between two good options. How did you decide?","Describe una decisión estratégica en la que tuviste que elegir entre dos buenas opciones. ¿Cómo decidiste?"],
+        ["Tell me about a turnaround or a major change you led. What were the results?","Cuéntame una transformación o un cambio importante que lideraste. ¿Qué resultados hubo?"],
+        ["How do you allocate scarce resources across competing priorities?","¿Cómo asignas recursos escasos entre prioridades que compiten?"],
+        ["Tell me about a bet that did not work. What did you do next?","Cuéntame una apuesta que no funcionó. ¿Qué hiciste después?"]
+      ]),
+      blk(3, ["3 · CEO, consejo y stakeholders","3 · CEO, board & stakeholders"], ["Influencia al más alto nivel, gestión de tensión y comunicación ejecutiva.","Influence at the highest level, handling tension and executive communication."], [
+        ["Tell me about a time you disagreed with the CEO or the board. How did you handle it?","Cuéntame una ocasión en la que no estuviste de acuerdo con el CEO o el consejo. ¿Cómo lo gestionaste?"],
+        ["How do you build alignment across peers who have competing agendas?","¿Cómo consigues alineamiento entre pares con agendas enfrentadas?"],
+        ["Describe how you communicate bad news to executives.","Describe cómo comunicas malas noticias a la alta dirección."],
+        ["How do you decide what reaches the executive team and what you handle yourself?","¿Cómo decides qué llega al comité de dirección y qué resuelves tú?"]
+      ]),
+      blk(4, ["4 · Liderazgo de organización","4 · Organizational leadership"], ["Construir equipos de líderes, cultura y gestión del talento.","Building leadership teams, culture and talent management."], [
+        ["How do you build and develop a leadership team?","¿Cómo construyes y desarrollas un equipo directivo?"],
+        ["Tell me about a difficult talent decision, such as exiting a senior leader.","Cuéntame una decisión de talento difícil, como la salida de un directivo."],
+        ["How do you shape culture in an organization you have just joined?","¿Cómo moldeas la cultura en una organización a la que acabas de llegar?"],
+        ["How do you plan the succession for your own role?","¿Cómo preparas la sucesión de tu propio puesto?"]
+      ]),
+      blk(5, ["5 · Juicio y ambigüedad","5 · Judgment & ambiguity"], ["Decidir con información incompleta, gestionar riesgo y sintetizar.","Deciding with incomplete information, managing risk and synthesizing."], [
+        ["Tell me about a high-stakes decision you made with incomplete information.","Cuéntame una decisión de alto riesgo que tomaste con información incompleta."],
+        ["How do you decide when to act and when to wait for more data?","¿Cómo decides cuándo actuar y cuándo esperar más datos?"],
+        ["How do you keep a complex message simple for a very senior audience?","¿Cómo mantienes sencillo un mensaje complejo para una audiencia muy senior?"],
+        ["What do you do when the numbers and your instinct disagree?","¿Qué haces cuando los números y tu instinto no coinciden?"]
+      ])
+    ])
+  ];
+  var DEMO_PRESET = PRESETS[2];
 
   // ---------- Bilingual "stuck" help ----------
   var HELP_CONTENT = {
@@ -748,6 +842,15 @@
   };
   function T(key){ return (UI_STRINGS[state.lang] || UI_STRINGS.es)[key] || key; }
 
+  function trackName(t){ return (t.nameLoc && (t.nameLoc[state.lang] || t.nameLoc.en)) || t.name; }
+  var LEVEL_GUIDE = {
+    junior: "Nivel junior (0-2 anos de experiencia): valora claridad, ownership de su propio trabajo, capacidad de aprender y colaborar. Los resultados pueden ser a escala de tarea o de proyecto pequeno; NO exijas impacto de negocio amplio ni liderazgo de personas. Un buen ejemplo puede venir de la universidad, de practicas o de proyectos personales.",
+    mid: "Nivel intermedio (3-6 anos): valora autonomia, resultados medibles en su area, priorizacion y colaboracion entre equipos. Espera hechos o numeros concretos de impacto, no necesariamente liderazgo formal de personas.",
+    senior: "Nivel senior (7-12 anos): valora liderazgo de proyectos o de personas, influencia sin autoridad formal, decisiones con trade-offs explicitos e impacto en el negocio. Espera que nombre la decision y su porque, no solo la tarea.",
+    exec: "Nivel directivo (Director o superior, con interlocucion de C-level): valora vision estrategica, decisiones de alto impacto con trade-offs explicitos, juicio bajo ambiguedad, gestion de stakeholders de alto nivel y capacidad de sintesis. Las respuestas deben ser mas cortas y dirigidas a la decision, su porque y su efecto en la organizacion; penaliza el detalle operativo innecesario."
+  };
+  function levelGuide(track){ return LEVEL_GUIDE[track.level] || LEVEL_GUIDE.senior; }
+
   function metathread(){
     return "Contexto: el objetivo de este entrenamiento es aprender a responder con claridad ejecutiva. El problema habitual es extenderse demasiado y dar exceso de detalle, lo que en procesos con interlocutores de alto nivel puede leerse como falta de comunicacion ejecutiva. Toda buena respuesta abre con la decision, el resultado o el mecanismo, nunca con el dataset, el contexto o la metodologia detras. Nunca inventes hechos que no esten en la respuesta de la persona.";
   }
@@ -769,7 +872,7 @@
     setMicLang: null,
     interview: null
   };
-  state.tracks[DEMO_PRESET.id] = DEMO_PRESET;
+  PRESETS.forEach(function(p){ state.tracks[p.id] = p; });
 
   var pendingSave = {};
 
@@ -839,10 +942,11 @@
     Object.keys(d.tracks || {}).forEach(function(id){
       var t = d.tracks[id];
       if(!(t && t.id && t.blocks)) return;
-      if(id === DEMO_PRESET.id){
+      var pre = PRESETS.filter(function(x){ return x.id === id; })[0];
+      if(pre){
         // base questions, labels and focus come from the code; keep only extra questions added later
         t.blocks.forEach(function(b){
-          var src = DEMO_PRESET.blocks.filter(function(x){ return x.id === b.id; })[0];
+          var src = pre.blocks.filter(function(x){ return x.id === b.id; })[0];
           if(!src) return;
           var have = {}; src.questions.forEach(function(qq){ have[qq.en] = true; });
           (b.questions || []).forEach(function(qq){ if(qq && qq.en && !have[qq.en]){ src.questions.push(qq); have[qq.en] = true; } });
@@ -1008,15 +1112,13 @@
   function renderTrackChips(){
     var wrap = $("trackbar"); wrap.innerHTML = "";
     var ids = Object.keys(state.tracks).sort(function(a,b){
-      if(a===DEMO_PRESET.id) return -1;
-      if(b===DEMO_PRESET.id) return 1;
       return (state.tracks[a].createdAt||0) - (state.tracks[b].createdAt||0);
     });
     ids.forEach(function(id){
       var t = state.tracks[id];
       var chip = document.createElement("button");
       chip.className = "chip" + (id===state.trackId ? " active":"");
-      chip.textContent = niceName(t.name);
+      chip.textContent = niceName(trackName(t));
       chip.onclick = function(){
         state.trackId = id;
         state.blockId = t.blocks[0].id;
@@ -1038,7 +1140,7 @@
   function niceName(n){ return String(n).replace(/\s+[—–-]\s+/g," · "); }
   function sectionTag(l){ return String(l).replace(/^(\d+)\s*·\s*/,function(m,n){ return (n.length<2?"0"+n:n)+" "; }); }
   function renderHeader(){
-    $("trackSub").textContent = niceName(currentTrack().name);
+    $("trackSub").textContent = niceName(trackName(currentTrack()));
   }
 
   function applyAIStrings(){
@@ -1095,6 +1197,7 @@
     renderHistory();
     renderStats();
     renderInterviewBar();
+    renderHeader();
     applyAIStrings();
   }
 
@@ -1104,7 +1207,8 @@
       "PUESTO/EMPRESA: " + name + "\n\n" +
       "OFERTA DE EMPLEO (puede venir en cualquier idioma; respeta ese idioma para las PREGUNTAS):\n\"\"\"\n" + jdText.slice(0,6000) + "\n\"\"\"\n\n" +
       "Disena entre 5 y 7 bloques de preguntas de entrevista de comportamiento (estilo STAR) que un entrevistador real usaria para evaluar a un candidato a esta posicion, centrados en lo que la oferta espera realmente (fit y valores, procesos/operaciones, herramientas si la oferta las menciona, stakeholders, project management, comunicacion ejecutiva, resolucion de problemas — adapta, quita o anade bloques segun lo que esta oferta concreta pida). Para cada bloque da: una etiqueta corta EN ESPANOL Y EN INGLES, una frase de foco (que evalua el entrevistador con este bloque) EN ESPANOL Y EN INGLES, y entre 4 y 6 preguntas de entrevistador reales en el MISMO idioma en que esta escrita la oferta (las preguntas van en un solo idioma, no bilingues).\n\n" +
-      "Responde UNICAMENTE con JSON:\n{\n  \"detected_lang\": \"en\" o \"es\",\n  \"blocks\": [ {\"label_es\":\"...\", \"label_en\":\"...\", \"focus_es\":\"...\", \"focus_en\":\"...\", \"questions\":[\"...\", \"...\"]} ]\n}";
+      "Adapta el nivel y la dificultad de las preguntas al seniority real del puesto (junior, intermedio, senior o directivo).\n\n" +
+      "Responde UNICAMENTE con JSON:\n{\n  \"detected_lang\": \"en\" o \"es\",\n  \"level\": \"junior\", \"mid\", \"senior\" o \"exec\" segun el seniority real del puesto,\n  \"blocks\": [ {\"label_es\":\"...\", \"label_en\":\"...\", \"focus_es\":\"...\", \"focus_en\":\"...\", \"questions\":[\"...\", \"...\"]} ]\n}";
     return aiJson(prompt).then(function(r){
       if(!r || !r.blocks || !r.blocks.length) throw new Error("empty");
       var lang = (r.detected_lang === "es") ? "es" : "en";
@@ -1123,6 +1227,7 @@
         id: "track-" + Date.now(),
         name: name,
         canonicalLang: lang,
+        level: (["junior","mid","senior","exec"].indexOf(r.level) >= 0 ? r.level : "senior"),
         createdAt: Date.now(),
         jdExcerpt: jdText.slice(0,1000),
         blocks: blocks
@@ -1408,7 +1513,7 @@
     var L = feedbackLangPhrase();
     var upper = targetWordsUpper();
     return "Eres un coach de entrevistas ejecutivas. Ayudas a una persona a entrenar una entrevista para: " + track.name + ".\n\n" +
-      metathread() + "\n\n" + buildScoreRubric() + "\n\n" + STYLE_AND_LANGUAGE_RULES + "\n\n" +
+      metathread() + "\n\n" + "NIVEL DEL PUESTO: " + levelGuide(track) + "\n\n" + buildScoreRubric() + "\n\n" + STYLE_AND_LANGUAGE_RULES + "\n\n" +
       "BLOQUE: " + blockLabel(track,block) + " - lo que evaluan: " + blockFocus(track,block) + "\n\n" +
       "PREGUNTA HECHA: \"" + question + "\"\n\n" +
       "RESPUESTA REAL DE LA PERSONA (" + wc + " palabras). " + timeLine + "\n\"\"\"\n" + answer + "\n\"\"\"" + compareTxt + "\n\n" +
