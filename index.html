@@ -125,6 +125,11 @@
   .chip.active,.chip.active:hover{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-ink);}
   .chip .n{font-weight:400;font-size:11.5px;opacity:.75;margin-right:7px;font-variant-numeric:tabular-nums;}
   #trackbar .chip{font:400 15px/1.2 var(--title);letter-spacing:0;}
+  .typegroup{display:inline-flex;gap:6px;flex-wrap:wrap;margin-right:12px;padding-right:14px;border-right:1px solid var(--line);}
+  #trackbar .chip.typechip{font:700 11px/1.2 var(--text);letter-spacing:.08em;text-transform:uppercase;}
+  .jdopts{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 12px;font-size:13px;color:var(--ink-soft);}
+  .jdopts label{display:inline-flex;align-items:center;gap:8px;}
+  .jdopts select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;}
   .chip.add,#trackbar .chip.add{border-style:dashed;color:var(--accent-text);font:700 11px/1.2 var(--text);letter-spacing:.1em;text-transform:uppercase;}
   .chip.add:hover{color:var(--ink);}
 
@@ -283,6 +288,7 @@
     <div class="jdform" id="jdForm">
       <input type="text" id="jdName" placeholder="Nombre del puesto y empresa (ej. «Head of FP&A, Adyen»)">
       <textarea id="jdText" placeholder="Pega aquí el texto completo de la oferta de empleo…"></textarea>
+      <div class="jdopts"><label><span id="txtJdLevel">Nivel</span> <select id="jdLevel"></select></label><label><span id="txtJdType">Tipo</span> <select id="jdType"></select></label></div>
       <div class="qactions">
         <button class="primary" id="btnGenerateTrack">Generar preguntas para este puesto</button>
         <button class="ghost" id="btnCancelJd">Cancelar</button>
@@ -352,6 +358,10 @@
         <div class="scorebar">
           <div class="scoreball" id="scoreBall">–</div>
           <div class="pills" id="pills"></div>
+        </div>
+        <div class="fb-section" id="jdFitSection" style="display:none;">
+          <div class="fb-label" id="fbJdFitLabel">Encaje con la oferta</div>
+          <div id="jdFitText"></div>
         </div>
         <div class="fb-section" id="improveSection" style="display:none;">
           <div class="fb-label" id="fbImproveLabel">Frente a tu intento anterior en esta pregunta</div>
@@ -462,11 +472,11 @@
   function blk(id, lab, foc, qs){
     return { id: id, label: bi(lab[0], lab[1]), focus: bi(foc[0], foc[1]), questions: qs.map(function(x){ return q(x[0], x[1]); }) };
   }
-  function preset(id, level, order, nameEs, nameEn, blocks){
-    return { id: id, level: level, name: nameEn, nameLoc: { es: nameEs, en: nameEn }, canonicalLang: "en", createdAt: order, blocks: blocks };
+  function preset(id, level, roleType, order, nameEs, nameEn, blocks){
+    return { id: id, level: level, roleType: roleType, name: nameEn, nameLoc: { es: nameEs, en: nameEn }, canonicalLang: "en", createdAt: order, blocks: blocks };
   }
   var PRESETS = [
-    preset("demo-junior", "junior", 0, "Nivel junior", "Junior level", [
+    preset("demo-junior", "junior", "ic", 0, "Nivel junior", "Junior level", [
       blk(1, ["1 · Motivación y ganas de aprender","1 · Motivation & eagerness to learn"], ["Interés por el puesto, ganas de aprender y primeras experiencias.","Interest in the role, eagerness to learn and early experiences."], [
         ["Why are you interested in this role and this field?","¿Por qué te interesa este puesto y este sector?"],
         ["Tell me about a project, at work or at university, that you are proud of.","Cuéntame un proyecto, del trabajo o de la universidad, del que estés orgulloso."],
@@ -498,7 +508,7 @@
         ["Where do you see yourself in three years?","¿Dónde te ves dentro de tres años?"]
       ])
     ]),
-    preset("demo-mid", "mid", 1, "Nivel intermedio", "Mid level", [
+    preset("demo-mid", "mid", "ic", 1, "Nivel intermedio · Individual contributor", "Mid level · Individual contributor", [
       blk(1, ["1 · Motivación y ownership","1 · Motivation & ownership"], ["Por qué das este paso, qué has logrado y cuánta iniciativa muestras.","Why you are making this move, what you have achieved and how much initiative you show."], [
         ["What made you want to take this step now?","¿Qué te ha hecho querer dar este paso ahora?"],
         ["Tell me about a result you delivered that you are proud of. What was your part?","Cuéntame un resultado que lograste y del que estés orgulloso. ¿Cuál fue tu parte?"],
@@ -530,7 +540,7 @@
         ["Where do you want to grow in the next two to three years?","¿Dónde quieres crecer en los próximos dos o tres años?"]
       ])
     ]),
-    preset("demo-senior-role", "senior", 2, "Nivel senior", "Senior level", [
+    preset("demo-senior-role", "senior", "ic", 2, "Nivel senior · Individual contributor", "Senior level · Individual contributor", [
       blk(1, ["1 · Motivación y encaje","1 · Motivation & fit"], ["Interés genuino por el puesto, iniciativa y autoconocimiento.","Genuine interest in the role, initiative and self-awareness."], [
         ["What excites you most about this role?","¿Qué es lo que más te motiva de este puesto?"],
         ["Tell me about a time you took the initiative to solve a problem nobody had asked you to solve.","Cuéntame una ocasión en la que tomaste la iniciativa para resolver un problema que nadie te había pedido resolver."],
@@ -549,11 +559,11 @@
         ["Describe a difficult conversation you had to lead. What was the outcome?","Describe una conversación difícil que tuviste que liderar. ¿Cuál fue el resultado?"],
         ["How do you adapt your message when you present to executives rather than to your own team?","¿Cómo adaptas tu mensaje cuando presentas a directivos en lugar de a tu propio equipo?"]
       ]),
-      blk(4, ["4 · Liderazgo y equipos","4 · Leadership & teams"], ["Desarrollo de personas, confianza y gestión del bajo rendimiento.","Developing people, building trust and handling underperformance."], [
-        ["Tell me how you develop the people on your team.","Cuéntame cómo desarrollas a las personas de tu equipo."],
-        ["Describe a time you had to deliver bad news to your team or your manager.","Describe una ocasión en la que tuviste que dar malas noticias a tu equipo o a tu jefe."],
-        ["How do you handle someone who is underperforming?","¿Cómo gestionas a alguien que no está rindiendo?"],
-        ["What is your approach to building trust in a new team?","¿Cuál es tu enfoque para generar confianza en un equipo nuevo?"]
+      blk(4, ["4 · Oficio e influencia","4 · Craft & influence"], ["Elevar el nivel del trabajo sin cargo formal, criterio propio y mentoría entre pares.","Raising the standard of work without formal authority, own judgment and peer mentoring."], [
+        ["Tell me about a time you raised the standard of work on your team without being the manager.","Cuéntame una ocasión en la que elevaste el nivel del trabajo de tu equipo sin ser el jefe."],
+        ["Describe a judgment call you made that others disagreed with. What happened?","Describe una decisión de criterio que tomaste y con la que otros no estaban de acuerdo. ¿Qué pasó?"],
+        ["How do you decide when to go deep yourself and when to rely on others?","¿Cómo decides cuándo profundizar tú mismo y cuándo apoyarte en otros?"],
+        ["Tell me about how you mentor peers or newer colleagues informally.","Cuéntame cómo mentorizas de manera informal a compañeros o a gente más nueva."]
       ]),
       blk(5, ["5 · Análisis y comunicación","5 · Analysis & communication"], ["Resolver problemas nuevos, usar datos para decidir y explicar con claridad.","Solving new problems, using data to decide and explaining clearly."], [
         ["Walk me through how you approach a complex problem you have never seen before.","Cuéntame cómo abordas un problema complejo que nunca has visto."],
@@ -562,7 +572,7 @@
         ["Tell me about a mistake you made at work. What did you learn?","Cuéntame un error que cometiste en el trabajo. ¿Qué aprendiste?"]
       ])
     ]),
-    preset("demo-exec", "exec", 3, "Nivel directivo", "Executive level", [
+    preset("demo-exec", "exec", "ic", 3, "Nivel directivo · Experto sin equipo", "Executive level · Individual contributor", [
       blk(1, ["1 · Visión y encaje","1 · Vision & fit"], ["Por qué este rol, qué visión traes y qué dejas tras de ti.","Why this role, what vision you bring and what you leave behind."], [
         ["Why this company, and why now?","¿Por qué esta empresa y por qué ahora?"],
         ["What would you want to have changed in this organization after your first year?","¿Qué te gustaría haber cambiado en esta organización tras tu primer año?"],
@@ -581,11 +591,11 @@
         ["Describe how you communicate bad news to executives.","Describe cómo comunicas malas noticias a la alta dirección."],
         ["How do you decide what reaches the executive team and what you handle yourself?","¿Cómo decides qué llega al comité de dirección y qué resuelves tú?"]
       ]),
-      blk(4, ["4 · Liderazgo de organización","4 · Organizational leadership"], ["Construir equipos de líderes, cultura y gestión del talento.","Building leadership teams, culture and talent management."], [
-        ["How do you build and develop a leadership team?","¿Cómo construyes y desarrollas un equipo directivo?"],
-        ["Tell me about a difficult talent decision, such as exiting a senior leader.","Cuéntame una decisión de talento difícil, como la salida de un directivo."],
-        ["How do you shape culture in an organization you have just joined?","¿Cómo moldeas la cultura en una organización a la que acabas de llegar?"],
-        ["How do you plan the succession for your own role?","¿Cómo preparas la sucesión de tu propio puesto?"]
+      blk(4, ["4 · Experto con influencia","4 · Expertise & influence at scale"], ["Credibilidad ante la alta dirección, influencia sin equipo a cargo y profundidad de oficio.","Credibility with senior leaders, influence without a team and depth of craft."], [
+        ["How do you build credibility with senior leaders who do not share your expertise?","¿Cómo construyes credibilidad ante directivos que no comparten tu especialidad?"],
+        ["Tell me about an idea of yours that changed the direction of the company.","Cuéntame una idea tuya que cambió la dirección de la empresa."],
+        ["How do you stay deep in your craft while operating at executive level?","¿Cómo mantienes la profundidad en tu oficio mientras operas a nivel directivo?"],
+        ["How do you shape decisions that you do not own?","¿Cómo influyes en decisiones que no son tuyas?"]
       ]),
       blk(5, ["5 · Juicio y ambigüedad","5 · Judgment & ambiguity"], ["Decidir con información incompleta, gestionar riesgo y sintetizar.","Deciding with incomplete information, managing risk and synthesizing."], [
         ["Tell me about a high-stakes decision you made with incomplete information.","Cuéntame una decisión de alto riesgo que tomaste con información incompleta."],
@@ -595,6 +605,46 @@
       ])
     ])
   ];
+
+  // Manager variants: same questions as the IC track for motivation, stakeholders and analysis; delivery and people blocks change.
+  function mgrFrom(baseId, id, level, order, nameEs, nameEn, b2, b4){
+    var base = PRESETS.filter(function(p){ return p.id === baseId; })[0];
+    var blocks = base.blocks.map(function(b){ return b.id === 2 ? b2 : (b.id === 4 ? b4 : b); });
+    return preset(id, level, "manager", order, nameEs, nameEn, blocks);
+  }
+  var B2_MID = blk(2, ["2 · Entrega a través de otros","2 · Delivery through others"], ["Pasar de hacer a liderar: fijar prioridades, delegar y responder por el resultado del equipo.","Moving from doing to leading: setting priorities, delegating and owning the team's result."], [
+    ["Tell me about a project your team delivered. What was your role and what was theirs?","Cuéntame un proyecto que entregó tu equipo. ¿Cuál fue tu papel y cuál el suyo?"],
+    ["How do you set priorities and expectations for your team?","¿Cómo fijas prioridades y expectativas para tu equipo?"],
+    ["Describe a time your team missed a deadline. What did you do?","Describe una ocasión en la que tu equipo no llegó a un plazo. ¿Qué hiciste?"],
+    ["How do you delegate? Tell me about something that was hard to hand over.","¿Cómo delegas? Cuéntame algo que te costó soltar."]
+  ]);
+  var B4_MID = blk(4, ["4 · Liderar personas","4 · Leading people"], ["Feedback, bajo rendimiento, onboarding y desarrollo de tu equipo.","Feedback, underperformance, onboarding and developing your team."], [
+    ["Tell me about the move from doing the work to leading others. What was hardest?","Cuéntame el paso de hacer el trabajo a liderar a otros. ¿Qué fue lo más difícil?"],
+    ["How do you give difficult feedback? Give me a real example.","¿Cómo das feedback difícil? Dame un ejemplo real."],
+    ["Tell me about managing someone who was underperforming.","Cuéntame cómo gestionaste a alguien que no estaba rindiendo."],
+    ["How do you onboard and develop a new team member?","¿Cómo incorporas y desarrollas a un nuevo miembro del equipo?"]
+  ]);
+  var B2_SENIOR = blk(2, ["2 · Entrega a través de otros","2 · Delivery through others"], ["Fijar objetivos, exigir sin microgestionar y asignar recursos del equipo.","Setting goals, holding people accountable without micromanaging and allocating the team's resources."], [
+    ["Tell me about a major goal your team delivered. How did you set it up?","Cuéntame un objetivo importante que entregó tu equipo. ¿Cómo lo planteaste?"],
+    ["How do you hold the team accountable without micromanaging?","¿Cómo exiges resultados al equipo sin microgestionar?"],
+    ["Describe a time you had to reallocate people in the middle of a project.","Describe una ocasión en la que tuviste que reasignar personas a mitad de un proyecto."],
+    ["How do you decide what your team takes on and what it says no to?","¿Cómo decides qué asume tu equipo y a qué dice que no?"]
+  ]);
+  PRESETS.push(mgrFrom("demo-mid", "demo-mid-mgr", "mid", 1, "Nivel intermedio · People manager", "Mid level · People manager", B2_MID, B4_MID));
+  PRESETS.push(mgrFrom("demo-senior-role", "demo-senior-mgr", "senior", 2, "Nivel senior · People manager", "Senior level · People manager", B2_SENIOR,
+      blk(4, ["4 · Liderazgo y equipos","4 · Leadership & teams"], ["Desarrollo de personas, confianza y gestión del bajo rendimiento.","Developing people, building trust and handling underperformance."], [
+        ["Tell me how you develop the people on your team.","Cuéntame cómo desarrollas a las personas de tu equipo."],
+        ["Describe a time you had to deliver bad news to your team or your manager.","Describe una ocasión en la que tuviste que dar malas noticias a tu equipo o a tu jefe."],
+        ["How do you handle someone who is underperforming?","¿Cómo gestionas a alguien que no está rindiendo?"],
+        ["What is your approach to building trust in a new team?","¿Cuál es tu enfoque para generar confianza en un equipo nuevo?"]
+      ])));
+  PRESETS.push(mgrFrom("demo-exec", "demo-exec-mgr", "exec", 3, "Nivel directivo · People manager", "Executive level · People manager", PRESETS[3].blocks[1],
+      blk(4, ["4 · Liderazgo de organización","4 · Organizational leadership"], ["Construir equipos de líderes, cultura y gestión del talento.","Building leadership teams, culture and talent management."], [
+        ["How do you build and develop a leadership team?","¿Cómo construyes y desarrollas un equipo directivo?"],
+        ["Tell me about a difficult talent decision, such as exiting a senior leader.","Cuéntame una decisión de talento difícil, como la salida de un directivo."],
+        ["How do you shape culture in an organization you have just joined?","¿Cómo moldeas la cultura en una organización a la que acabas de llegar?"],
+        ["How do you plan the succession for your own role?","¿Cómo preparas la sucesión de tu propio puesto?"]
+      ])));
   var DEMO_PRESET = PRESETS[2];
 
   // ---------- Bilingual "stuck" help ----------
@@ -678,6 +728,14 @@
       chkLength: "Está dentro del tiempo objetivo",
       selfHint: "Sin IA no hay nota ni reescritura. Marca lo que cumples y guarda el intento.",
       prevSelf: "Intento anterior:", noAISummary: "Sin IA no hay resumen de patrones. Aquí tienes tus resultados.",
+      typeIC: "Individual contributor", typeMgr: "People manager", typeTitle: "Tipo de puesto: sin equipo a cargo, o liderando un equipo",
+      jdLevelLbl: "Nivel", jdTypeLbl: "Tipo", jdAuto: "Detectar de la oferta",
+      profileTitle: "Perfil del puesto",
+      profilePresetNote: "Posición de práctica genérica, sin oferta asociada. Con «Nueva posición» pega una oferta y la evaluación se hará contra ese puesto concreto.",
+      profileOverride: "Detectado de la oferta. Si no es correcto, cámbialo aquí; se aplica a las próximas preguntas y evaluaciones.",
+      profileNone: "Esta posición se creó sin perfil. Vuelve a pegar la oferta con «Nueva posición» para generarlo.",
+      profileReqs: "Requisitos clave de la oferta", profileNoPractice: "sin practicar",
+      jdFitLabel: "Encaje con la oferta",
       statAttempts: "intentos", statAvgWords: "palabras/med.", statAvgScore: "nota/med.",
       addPosition: "+ Nueva posición",
       jdNamePh: "Nombre del puesto y empresa (ej. «Head of FP&A, Adyen»)",
@@ -774,6 +832,14 @@
       chkLength: "It fits the target time",
       selfHint: "Without AI there is no score or rewrite. Tick what you meet and save the attempt.",
       prevSelf: "Previous attempt:", noAISummary: "Without AI there is no pattern summary. Here are your results.",
+      typeIC: "Individual contributor", typeMgr: "People manager", typeTitle: "Role type: no direct reports, or leading a team",
+      jdLevelLbl: "Level", jdTypeLbl: "Type", jdAuto: "Detect from the posting",
+      profileTitle: "Role profile",
+      profilePresetNote: "Generic practice position, with no job posting attached. Use \u00abNew position\u00bb to paste a posting and the evaluation will be made against that specific role.",
+      profileOverride: "Detected from the posting. If it is wrong, change it here; it applies to the next questions and evaluations.",
+      profileNone: "This position was created without a profile. Paste the posting again with \u00abNew position\u00bb to generate it.",
+      profileReqs: "Key requirements in the posting", profileNoPractice: "not practiced yet",
+      jdFitLabel: "Fit with the posting",
       statAttempts: "attempts", statAvgWords: "avg words", statAvgScore: "avg score",
       addPosition: "+ New position",
       jdNamePh: "Role and company (e.g. «Head of FP&A, Adyen»)",
@@ -851,6 +917,22 @@
   };
   function levelGuide(track){ return LEVEL_GUIDE[track.level] || LEVEL_GUIDE.senior; }
 
+  var TYPE_GUIDE = {
+    ic: "Rol de contribuidor individual (sin equipo a cargo): valora una contribucion personal clara con 'yo' explicito (que hizo la persona, no el equipo), profundidad y criterio propio, influencia sin autoridad formal y ownership de resultados. No penalices la falta de experiencia gestionando personas.",
+    manager: "Rol de people manager (con equipo a cargo): valora como desarrolla, motiva y exige a las personas, las decisiones sobre personas (contratar, dar feedback, bajo rendimiento), la delegacion y los resultados logrados a traves de otros. Penaliza que se atribuya todo el merito con 'yo' sin reconocer al equipo, o que no explique cual fue su papel como lider frente al del equipo.",
+    mixed: "Rol mixto o poco claro (contribucion personal y algo de liderazgo): valora que la respuesta deje claro cual fue la parte de la persona y cual la del equipo."
+  };
+  function roleType(track){ return TYPE_GUIDE[track.roleType] ? track.roleType : "mixed"; }
+  function typeGuide(track){ return TYPE_GUIDE[roleType(track)]; }
+  var LEVEL_LABEL = { junior: {es:"Junior",en:"Junior"}, mid: {es:"Intermedio",en:"Mid"}, senior: {es:"Senior",en:"Senior"}, exec: {es:"Directivo",en:"Executive"} };
+  var TYPE_LABEL = { ic: {es:"Individual contributor",en:"Individual contributor"}, manager: {es:"People manager",en:"People manager"}, mixed: {es:"Mixto",en:"Mixed"} };
+  function levelLabel(track){ return (LEVEL_LABEL[track.level] || LEVEL_LABEL.senior)[state.lang]; }
+  function typeLabel(track){ return TYPE_LABEL[roleType(track)][state.lang]; }
+  function presetFor(level, type){
+    var m = PRESETS.filter(function(p){ return p.level === level && p.roleType === type; })[0];
+    return m || PRESETS.filter(function(p){ return p.level === level; })[0];
+  }
+
   function metathread(){
     return "Contexto: el objetivo de este entrenamiento es aprender a responder con claridad ejecutiva. El problema habitual es extenderse demasiado y dar exceso de detalle, lo que en procesos con interlocutores de alto nivel puede leerse como falta de comunicacion ejecutiva. Toda buena respuesta abre con la decision, el resultado o el mecanismo, nunca con el dataset, el contexto o la metodologia detras. Nunca inventes hechos que no esten en la respuesta de la persona.";
   }
@@ -858,6 +940,7 @@
   var state = {
     lang: ((navigator.language || "en").toLowerCase().indexOf("es") === 0 ? "es" : "en"),
     trackId: "demo-senior-role",
+    presetType: "ic",
     tracks: {},
     blockId: 1,
     questionIdx: 0,
@@ -924,7 +1007,7 @@
 
   function persist(){
     lsSet(LS_KEY, JSON.stringify({
-      prefs: { masteryThreshold: state.masteryThreshold, targetLength: state.targetLength, lang: state.lang, trackId: state.trackId },
+      prefs: { masteryThreshold: state.masteryThreshold, targetLength: state.targetLength, lang: state.lang, trackId: state.trackId, presetType: state.presetType },
       tracks: state.tracks,
       attempts: state.attempts.slice(0, 400)
     }));
@@ -939,6 +1022,7 @@
     if(typeof p.masteryThreshold === "number") state.masteryThreshold = p.masteryThreshold;
     if(p.targetLength === "short" || p.targetLength === "balanced" || p.targetLength === "detailed") state.targetLength = p.targetLength;
     if(p.lang === "en" || p.lang === "es") state.lang = p.lang;
+    if(p.presetType === "ic" || p.presetType === "manager") state.presetType = p.presetType;
     Object.keys(d.tracks || {}).forEach(function(id){
       var t = d.tracks[id];
       if(!(t && t.id && t.blocks)) return;
@@ -949,7 +1033,7 @@
           var src = pre.blocks.filter(function(x){ return x.id === b.id; })[0];
           if(!src) return;
           var have = {}; src.questions.forEach(function(qq){ have[qq.en] = true; });
-          (b.questions || []).forEach(function(qq){ if(qq && qq.en && !have[qq.en]){ src.questions.push(qq); have[qq.en] = true; } });
+          (b.questions || []).forEach(function(qq){ if(qq && qq.en && qq.gen && !have[qq.en]){ src.questions.push(qq); have[qq.en] = true; } });
         });
       } else {
         state.tracks[id] = t;
@@ -957,6 +1041,8 @@
     });
     if(Array.isArray(d.attempts)){ state.attempts = d.attempts; state.attempts.sort(function(a,b){ return b.ts - a.ts; }); }
     if(p.trackId && state.tracks[p.trackId]){ state.trackId = p.trackId; state.blockId = state.tracks[p.trackId].blocks[0].id; }
+    var ct = state.tracks[state.trackId];
+    if(ct && isPreset(ct)) state.presetType = (ct.roleType === "manager") ? "manager" : "ic";
   }
 
   var AI = { mode:"none", model:"", key:"", remember:false, configured:false };
@@ -1109,49 +1195,21 @@
   }
 
   // ---------- Track chips + "add a position" ----------
-  function renderTrackChips(){
-    var wrap = $("trackbar"); wrap.innerHTML = "";
-    var ids = Object.keys(state.tracks).sort(function(a,b){
-      return (state.tracks[a].createdAt||0) - (state.tracks[b].createdAt||0);
-    });
-    ids.forEach(function(id){
-      var t = state.tracks[id];
-      var chip = document.createElement("button");
-      chip.className = "chip" + (id===state.trackId ? " active":"");
-      chip.textContent = niceName(trackName(t));
-      chip.onclick = function(){
-        state.trackId = id;
-        state.blockId = t.blocks[0].id;
-        $("jdForm").classList.remove("open");
-        renderTrackChips(); renderBlockChips(); renderHeader();
-        renderStats(); renderHistory();
-        pickQuestion(false).then(renderQuestion);
-        savePrefs();
-      };
-      wrap.appendChild(chip);
-    });
-    var addChip = document.createElement("button");
-    addChip.className = "chip add";
-    addChip.textContent = T("addPosition");
-    addChip.onclick = function(){ $("jdForm").classList.toggle("open"); };
-    wrap.appendChild(addChip);
-  }
-
   function niceName(n){ return String(n).replace(/\s+[—–-]\s+/g," · "); }
   function sectionTag(l){ return String(l).replace(/^(\d+)\s*·\s*/,function(m,n){ return (n.length<2?"0"+n:n)+" "; }); }
   function renderHeader(){
-    $("trackSub").textContent = niceName(trackName(currentTrack()));
+    $("trackSub").textContent = trackSubText(currentTrack());
   }
 
   function applyAIStrings(){
     var map = { aiTitle:"aiTitle", aiIntro:"aiIntro", aiOptApi:"aiOptApi", aiOptApiD:"aiOptApiD", aiOptPaste:"aiOptPaste", aiOptPasteD:"aiOptPasteD",
       aiOptNone:"aiOptNone", aiOptNoneD:"aiOptNoneD", aiRememberTxt:"aiRemember", aiApiNote:"aiApiNote", aiSave:"aiSave", aiClose:"aiClose",
       pmTitle:"pasteTitle", pmS1:"pasteS1", pmS2:"pasteS2", pmS3:"pasteS3", pmUse:"pasteUse", pmCancel:"pasteCancel",
-      fbSelfLabel:"selfLabel", txtChkHeadline:"chkHeadline", txtChkStory:"chkStory", txtChkLength:"chkLength", selfHint:"selfHint" };
+      fbSelfLabel:"selfLabel", txtChkHeadline:"chkHeadline", txtChkStory:"chkStory", txtChkLength:"chkLength", selfHint:"selfHint", fbJdFitLabel:"jdFitLabel" };
     Object.keys(map).forEach(function(id){ $(id).textContent = T(map[id]); });
     $("aiModel").placeholder = T("aiModelPh"); $("aiKey").placeholder = T("aiKeyPh"); $("pmReply").placeholder = T("pasteReplyPh");
     $("pmCopy").textContent = T("pasteCopy");
-    updateAIChip(); updateEvalButtonLabel();
+    updateAIChip(); updateEvalButtonLabel(); renderJdOverrides();
   }
 
   // ---------- Apply the full UI chrome in the active language ----------
@@ -1201,20 +1259,146 @@
     applyAIStrings();
   }
 
+  // ---------- Role profile: job-posting spine (level, IC vs manager, key requirements) ----------
+  function isPreset(t){ return PRESETS.some(function(p){ return p.id === t.id; }); }
+  function pickLoc(o){ return (o && (o[state.lang] || o.es || o.en)) || ""; }
+  function reqFor(track, block){
+    if(!track.profile || !block || !block.req) return null;
+    return (track.profile.requirements || []).filter(function(r){ return r.id === block.req; })[0] || null;
+  }
+  function profileContext(track, block){
+    if(!track.profile) return "";
+    var reqs = (track.profile.requirements || []).map(function(r){ return r.id + ". " + pickLoc(r); }).join("\n");
+    var r = reqFor(track, block);
+    return "PERFIL DE LA OFERTA (es el eje de toda la evaluacion: la persona se prepara para ESTE puesto, no para uno generico):\n" + pickLoc(track.profile.summary) +
+      "\nRequisitos clave de la oferta, por orden de importancia:\n" + reqs +
+      (r ? "\nESTA PREGUNTA comprueba el requisito " + r.id + ": " + pickLoc(r) + "." : "");
+  }
+  function trackSubText(t){
+    return isPreset(t) ? niceName(trackName(t)) : niceName(trackName(t)) + " · " + levelLabel(t) + " · " + typeLabel(t);
+  }
+  function chipLabel(t){ return isPreset(t) ? levelLabel(t) : niceName(trackName(t)); }
+
+  function selectTrack(id){
+    var t = state.tracks[id];
+    state.trackId = id; state.blockId = t.blocks[0].id;
+    if(isPreset(t)) state.presetType = (t.roleType === "manager") ? "manager" : "ic";
+    $("jdForm").classList.remove("open");
+    renderTrackChips(); renderBlockChips(); renderHeader(); renderStats(); renderHistory();
+    pickQuestion(false).then(renderQuestion);
+    savePrefs();
+  }
+
+  function renderTrackChips(){
+    var wrap = $("trackbar"); wrap.innerHTML = "";
+    var grp = document.createElement("div"); grp.className = "typegroup";
+    [["ic","typeIC"],["manager","typeMgr"]].forEach(function(x){
+      var b = document.createElement("button");
+      b.className = "chip typechip" + (state.presetType === x[0] ? " active" : "");
+      b.textContent = T(x[1]); b.title = T("typeTitle");
+      b.onclick = function(){
+        state.presetType = x[0];
+        var cur = currentTrack();
+        if(isPreset(cur)){ selectTrack(presetFor(cur.level === "junior" ? "mid" : cur.level, x[0]).id); }
+        else { renderTrackChips(); savePrefs(); }
+      };
+      grp.appendChild(b);
+    });
+    wrap.appendChild(grp);
+    var ids = Object.keys(state.tracks).filter(function(id){
+      var t = state.tracks[id];
+      return isPreset(t) ? t.roleType === state.presetType : true;
+    }).sort(function(a,b){ return (state.tracks[a].createdAt||0) - (state.tracks[b].createdAt||0); });
+    ids.forEach(function(id){
+      var t = state.tracks[id];
+      var chip = document.createElement("button");
+      chip.className = "chip" + (id===state.trackId ? " active":"");
+      chip.textContent = chipLabel(t);
+      chip.onclick = function(){ selectTrack(id); };
+      wrap.appendChild(chip);
+    });
+    var addChip = document.createElement("button");
+    addChip.className = "chip add";
+    addChip.textContent = T("addPosition");
+    addChip.onclick = function(){ $("jdForm").classList.toggle("open"); };
+    wrap.appendChild(addChip);
+  }
+
+  function optionsHtml(map, cur, autoLabel){
+    return (autoLabel ? '<option value="">' + escapeHtml(autoLabel) + '</option>' : "") +
+      Object.keys(map).map(function(k){
+        return '<option value="' + k + '"' + (k === cur ? " selected" : "") + '>' + escapeHtml(map[k][state.lang]) + '</option>';
+      }).join("");
+  }
+  function renderJdOverrides(){
+    var l = $("jdLevel"), ty = $("jdType");
+    var cl = l.value, ct = ty.value;
+    l.innerHTML = optionsHtml(LEVEL_LABEL, cl, T("jdAuto"));
+    ty.innerHTML = optionsHtml(TYPE_LABEL, ct, T("jdAuto"));
+    $("txtJdLevel").textContent = T("jdLevelLbl"); $("txtJdType").textContent = T("jdTypeLbl");
+  }
+
+  function profileHtml(){
+    var t = currentTrack();
+    var head = '<h4>' + escapeHtml(T("profileTitle")) + '</h4>';
+    if(isPreset(t)) return head + '<div class="hint" style="margin-bottom:18px;">' + escapeHtml(T("profilePresetNote")) + '</div>';
+    var html = head +
+      '<div class="jdopts"><label><span>' + escapeHtml(T("jdLevelLbl")) + '</span> <select id="profLevel">' + optionsHtml(LEVEL_LABEL, t.level) + '</select></label>' +
+      '<label><span>' + escapeHtml(T("jdTypeLbl")) + '</span> <select id="profType">' + optionsHtml(TYPE_LABEL, roleType(t)) + '</select></label></div>' +
+      '<div class="hint" style="margin-bottom:10px;">' + escapeHtml(T("profileOverride")) + '</div>';
+    var p = t.profile;
+    if(!p){ return html + '<div class="hint" style="margin-bottom:18px;">' + escapeHtml(T("profileNone")) + '</div>'; }
+    var list = trackAttempts();
+    html += '<div style="margin-bottom:10px;">' + escapeHtml(pickLoc(p.summary)) + '</div>' +
+      '<div class="fb-label" style="margin-bottom:6px;">' + escapeHtml(T("profileReqs")) + '</div>';
+    (p.requirements || []).forEach(function(r){
+      var ids = {}; t.blocks.forEach(function(b){ if(b.req === r.id) ids[b.id] = true; });
+      var at = list.filter(function(a){ return ids[a.blockId]; });
+      var sc = at.filter(function(a){ return a.feedback && typeof a.feedback.score === "number"; });
+      var avg = sc.length ? (sc.reduce(function(s,a){ return s + a.feedback.score; }, 0) / sc.length).toFixed(1) : null;
+      html += '<div class="h-top" style="margin-bottom:8px;"><div class="h-q">' + r.id + '. ' + escapeHtml(pickLoc(r)) + '</div>' +
+        '<div class="mono" style="font-size:0.8rem;color:var(--ink-soft);">' +
+        (at.length ? (at.length + ' ' + T("progAttempts") + (avg ? ' · ' + T("progScore") + ' ' + avg : '')) : escapeHtml(T("profileNoPractice"))) + '</div></div>';
+    });
+    return html + '<div style="margin-bottom:18px;"></div>';
+  }
+  function bindProfileControls(){
+    var l = $("profLevel"), ty = $("profType");
+    if(!l || !ty) return;
+    var t = currentTrack();
+    l.onchange = function(){ t.level = l.value; saveTrack(t); renderHeader(); };
+    ty.onchange = function(){ t.roleType = ty.value; saveTrack(t); renderHeader(); };
+  }
+
   // ---------- Generate a new track from a pasted job posting ----------
-  function generateTrackFromJD(name, jdText){
+  function generateTrackFromJD(name, jdText, forced){
+    forced = forced || {};
+    var fixed = "";
+    if(forced.level || forced.roleType){
+      fixed = "El usuario ya ha fijado" + (forced.level ? " el seniority = \"" + forced.level + "\"" : "") + (forced.roleType ? " el tipo de rol = \"" + forced.roleType + "\"" : "") + ": usalo tal cual en el JSON y adapta las preguntas a ello.\n\n";
+    }
     var prompt = "Eres un experto en diseno de procesos de entrevista de contratacion.\n\n" +
       "PUESTO/EMPRESA: " + name + "\n\n" +
       "OFERTA DE EMPLEO (puede venir en cualquier idioma; respeta ese idioma para las PREGUNTAS):\n\"\"\"\n" + jdText.slice(0,6000) + "\n\"\"\"\n\n" +
-      "Disena entre 5 y 7 bloques de preguntas de entrevista de comportamiento (estilo STAR) que un entrevistador real usaria para evaluar a un candidato a esta posicion, centrados en lo que la oferta espera realmente (fit y valores, procesos/operaciones, herramientas si la oferta las menciona, stakeholders, project management, comunicacion ejecutiva, resolucion de problemas — adapta, quita o anade bloques segun lo que esta oferta concreta pida). Para cada bloque da: una etiqueta corta EN ESPANOL Y EN INGLES, una frase de foco (que evalua el entrevistador con este bloque) EN ESPANOL Y EN INGLES, y entre 4 y 6 preguntas de entrevistador reales en el MISMO idioma en que esta escrita la oferta (las preguntas van en un solo idioma, no bilingues).\n\n" +
-      "Adapta el nivel y la dificultad de las preguntas al seniority real del puesto (junior, intermedio, senior o directivo).\n\n" +
-      "Responde UNICAMENTE con JSON:\n{\n  \"detected_lang\": \"en\" o \"es\",\n  \"level\": \"junior\", \"mid\", \"senior\" o \"exec\" segun el seniority real del puesto,\n  \"blocks\": [ {\"label_es\":\"...\", \"label_en\":\"...\", \"focus_es\":\"...\", \"focus_en\":\"...\", \"questions\":[\"...\", \"...\"]} ]\n}";
+      "PASO 1. Analiza la oferta:\n" +
+      "a) Seniority real: \"junior\", \"mid\", \"senior\" o \"exec\" (directivo, con interlocucion de C-level).\n" +
+      "b) Tipo de rol: \"ic\" = contribuidor individual sin reports directos (aunque el titulo diga Manager); \"manager\" = lidera personas (reports directos, contratar, evaluar desempeno, desarrollar un equipo); \"mixed\" = ambos o no queda claro. Decide por las responsabilidades y los verbos de la oferta, no por el titulo.\n" +
+      "c) Entre 5 y 7 requisitos clave que la oferta exige de verdad, ordenados por importancia. Cada uno en una frase corta en espanol y en ingles, fiel a lo que dice la oferta (nada generico).\n" +
+      "d) Un resumen de 1-2 frases de lo que busca este puesto, en espanol y en ingles.\n\n" +
+      fixed +
+      "PASO 2. Disena entre 5 y 7 bloques de preguntas de entrevista de comportamiento (estilo STAR) que un entrevistador real usaria para este puesto. Cada bloque comprueba uno de los requisitos clave (campo \"req\": numero de 1 a N; un requisito puede tener mas de un bloque, pero todos deben quedar cubiertos). Para cada bloque da: una etiqueta corta EN ESPANOL Y EN INGLES, una frase de foco (que evalua el entrevistador con este bloque) EN ESPANOL Y EN INGLES, y entre 4 y 6 preguntas de entrevistador reales en el MISMO idioma en que esta escrita la oferta (un solo idioma, no bilingues). Adapta el nivel y la dificultad al seniority; si el rol es manager incluye preguntas de contratar, dar feedback, bajo rendimiento, desarrollo de personas y delegacion; si es ic, de influencia sin autoridad, ownership, profundidad de oficio y colaboracion entre areas.\n\n" +
+      "Responde UNICAMENTE con JSON:\n{\n  \"detected_lang\": \"en\" o \"es\",\n  \"level\": \"junior\", \"mid\", \"senior\" o \"exec\",\n  \"role_type\": \"ic\", \"manager\" o \"mixed\",\n  \"summary_es\": \"...\", \"summary_en\": \"...\",\n  \"requirements\": [ {\"es\":\"...\", \"en\":\"...\"} ],\n  \"blocks\": [ {\"req\": 1, \"label_es\":\"...\", \"label_en\":\"...\", \"focus_es\":\"...\", \"focus_en\":\"...\", \"questions\":[\"...\", \"...\"]} ]\n}";
     return aiJson(prompt).then(function(r){
       if(!r || !r.blocks || !r.blocks.length) throw new Error("empty");
       var lang = (r.detected_lang === "es") ? "es" : "en";
+      var reqs = (r.requirements || []).filter(function(x){ return x && (x.es || x.en); }).slice(0,7).map(function(x, i){
+        return { id: i+1, es: x.es || x.en, en: x.en || x.es };
+      });
       var blocks = r.blocks.slice(0,7).map(function(b, i){
+        var rq = parseInt(b.req, 10);
         return {
           id: i+1,
+          req: (rq >= 1 && rq <= reqs.length) ? rq : null,
           label: bi(b.label_es || ("Bloque " + (i+1)), b.label_en || ("Block " + (i+1))),
           focus: bi(b.focus_es || "", b.focus_en || ""),
           questions: (b.questions||[]).filter(Boolean).map(function(qt){
@@ -1223,11 +1407,15 @@
         };
       }).filter(function(b){ return b.questions.length; });
       if(!blocks.length) throw new Error("empty");
+      var level = forced.level || r.level;
+      var type = forced.roleType || r.role_type;
       return {
         id: "track-" + Date.now(),
         name: name,
         canonicalLang: lang,
-        level: (["junior","mid","senior","exec"].indexOf(r.level) >= 0 ? r.level : "senior"),
+        level: (["junior","mid","senior","exec"].indexOf(level) >= 0 ? level : "senior"),
+        roleType: (["ic","manager","mixed"].indexOf(type) >= 0 ? type : "mixed"),
+        profile: reqs.length ? { summary: bi(r.summary_es || r.summary_en || "", r.summary_en || r.summary_es || ""), requirements: reqs } : null,
         createdAt: Date.now(),
         jdExcerpt: jdText.slice(0,1000),
         blocks: blocks
@@ -1241,6 +1429,7 @@
     var existing = block.questions.map(function(qq){ return "- " + (qq[track.canonicalLang]||""); }).join("\n");
     var prompt = "Estas ayudando a preparar la entrevista real de: " + track.name + ".\n\n" +
       "Bloque: " + blockLabel(track,block) + " - lo que evaluan: " + blockFocus(track,block) + "\n\n" +
+      "NIVEL: " + levelGuide(track) + "\nTIPO DE ROL: " + typeGuide(track) + "\n" + (profileContext(track, block) ? profileContext(track, block) + "\n" : "") + "\n" +
       "La persona ya domina (nota muy alta) todas las preguntas de este bloque que tenia. No repitas ninguna, ni una variacion demasiado obvia:\n" + existing + "\n\n" +
       "Genera UNA pregunta de entrevista nueva y realista para este mismo bloque, en " + (track.canonicalLang==="es"?"espanol":"ingles") + ", con el mismo estilo, nivel de seniority y tono que un entrevistador real usaria para esta posicion. Responde UNICAMENTE con JSON: {\"question\": \"...\"}";
     return aiJson(prompt)
@@ -1251,7 +1440,7 @@
   function ensureFreshQuestion(track, block){
     return generateQuestion(track, block).then(function(text){
       if(text){
-        var o = {}; o[track.canonicalLang] = text;
+        var o = {}; o[track.canonicalLang] = text; o.gen = true;
         block.questions.push(o);
         saveTrack(track);
       }
@@ -1512,8 +1701,9 @@
 
     var L = feedbackLangPhrase();
     var upper = targetWordsUpper();
+    var jdCtx = profileContext(track, block);
     return "Eres un coach de entrevistas ejecutivas. Ayudas a una persona a entrenar una entrevista para: " + track.name + ".\n\n" +
-      metathread() + "\n\n" + "NIVEL DEL PUESTO: " + levelGuide(track) + "\n\n" + buildScoreRubric() + "\n\n" + STYLE_AND_LANGUAGE_RULES + "\n\n" +
+      metathread() + "\n\n" + "NIVEL DEL PUESTO: " + levelGuide(track) + "\n\n" + "TIPO DE ROL: " + typeGuide(track) + "\n\n" + (jdCtx ? jdCtx + "\n" + "Ademas del baremo, valora el CONTENIDO frente a la oferta: si la respuesta no aporta evidencia del requisito que esta pregunta comprueba, el score no debe superar 7 aunque este bien estructurada. La estructura sigue siendo la base del score.\n\n" : "") + buildScoreRubric() + "\n\n" + STYLE_AND_LANGUAGE_RULES + "\n\n" +
       "BLOQUE: " + blockLabel(track,block) + " - lo que evaluan: " + blockFocus(track,block) + "\n\n" +
       "PREGUNTA HECHA: \"" + question + "\"\n\n" +
       "RESPUESTA REAL DE LA PERSONA (" + wc + " palabras). " + timeLine + "\n\"\"\"\n" + answer + "\n\"\"\"" + compareTxt + "\n\n" +
@@ -1529,6 +1719,7 @@
       '  "vocab": [{"es":"termino entre corchetes", "en":"equivalente sencillo en el idioma de la pregunta", "example":"frase corta de ejemplo"}],\n' +
       '  "score": numero entre 1 y 10 segun el baremo de arriba,\n' +
       '  "improvement_comment": "si hay intento anterior arriba, 1 frase honesta ' + L + ' sobre si esta respuesta mejora respecto a la persona misma; cadena vacia si es la primera vez con esta pregunta",\n' +
+      (jdCtx ? '  "jd_fit": "1-2 frases ' + L + ': que evidencia da esta respuesta del requisito de la oferta que comprueba la pregunta y que le falta para convencer a quien contrata este puesto (usa los terminos de la oferta)",\n' : '') +
       '  "one_line_tip": "un consejo accionable ' + L + ', una sola frase"\n' +
       "}";
   }
@@ -1567,7 +1758,7 @@
   }
 
   function showAISections(show){
-    ["improveSection","storyFitSection","cutsSection","movesSection","rewriteSection","vocabSection","altWrap"].forEach(function(id){
+    ["jdFitSection","improveSection","storyFitSection","cutsSection","movesSection","rewriteSection","vocabSection","altWrap"].forEach(function(id){
       $(id).style.display = show ? "" : "none";
     });
     $("tipLine").style.display = show ? "" : "none";
@@ -1679,6 +1870,9 @@
     } else {
       $("improveSection").style.display = "none";
     }
+
+    if(fb.jd_fit){ $("jdFitSection").style.display = "block"; $("jdFitText").textContent = fb.jd_fit; }
+    else { $("jdFitSection").style.display = "none"; }
 
     $("storyFit").innerHTML =
       (fb.headline_first_comment ? "<div style=\"margin-bottom:6px;\">"+escapeHtml(fb.headline_first_comment)+"</div>" : "") +
@@ -1952,7 +2146,8 @@
       return '<div class="h-top" style="margin-bottom:8px;"><div class="h-q">'+escapeHtml(blockLabel(track,b))+'</div>' +
         '<div class="mono" style="font-size:0.8rem;color:var(--ink-soft);">'+bl.length+' '+T("progAttempts")+' · '+T("progScore")+' '+avgScore+' · '+avgWords+' '+T("progWords")+' · '+mastered+'/'+b.questions.length+' '+T("progMastered")+'</div></div>';
     }).join("");
-    $("progressPanel").innerHTML = '<h4>' + T("progressTitle") + '</h4>' + rows;
+    $("progressPanel").innerHTML = profileHtml() + '<h4>' + T("progressTitle") + '</h4>' + rows;
+    bindProfileControls();
   }
 
   function drawSpark(list){
@@ -2071,7 +2266,7 @@
       if(!aiReady()){ openAIModal(); return; }
       $("btnGenerateTrack").disabled = true;
       $("jdStatus").textContent = T("jdWorking");
-      generateTrackFromJD(name, jd).then(function(track){
+      generateTrackFromJD(name, jd, { level: $("jdLevel").value, roleType: $("jdType").value }).then(function(track){
         state.tracks[track.id] = track;
         state.trackId = track.id;
         state.blockId = track.blocks[0].id;
