@@ -136,6 +136,8 @@
   .linkbtn{display:block;background:none;border:0;padding:0;margin:10px 0 0;cursor:pointer;font:700 11px/1 var(--text);letter-spacing:.1em;text-transform:uppercase;color:var(--cover-soft);}
   .linkbtn:hover{color:#fff;}
   .guidelink{font:700 11px/1.2 var(--text);letter-spacing:.1em;text-transform:uppercase;color:inherit;text-decoration:none;opacity:.8;}
+  .jdopen{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 4px;}
+  .jdopen .hint{margin:0;}
   .chip.add,#trackbar .chip.add{border-style:dashed;color:var(--accent-text);font:700 11px/1.2 var(--text);letter-spacing:.1em;text-transform:uppercase;}
   .chip.add:hover{color:var(--ink);}
 
@@ -292,6 +294,7 @@
     </div>
 
     <div class="chips" id="trackbar"></div>
+    <div class="jdopen"><button type="button" class="chip add" id="btnOpenJd"></button><span class="hint" id="txtJdOpenHint"></span></div>
     <div class="jdform" id="jdForm">
       <input type="text" id="jdName" placeholder="Nombre del puesto y empresa (ej. «Head of FP&A, Adyen»)">
       <textarea id="jdText" placeholder="Pega aquí el texto completo de la oferta de empleo…"></textarea>
@@ -756,11 +759,12 @@
       jdGo: "Generar preguntas con este perfil", jdBack: "Volver",
       fixProfile: "¿No es correcto? Cámbialo",
       profileTitle: "Perfil del puesto",
-      profilePresetNote: "Posición de práctica genérica, sin oferta asociada. Con «Nueva posición» pega una oferta y la evaluación se hará contra ese puesto concreto.",
+      profilePresetNote: "Posición de práctica genérica, sin oferta asociada. Con «Pegar una oferta de empleo» pega una oferta y la evaluación se hará contra ese puesto concreto.",
       profileOverride: "Marca lo que corresponde. Se aplica a las próximas preguntas y evaluaciones.",
-      profileNone: "Esta posición se creó sin perfil. Vuelve a pegar la oferta con «Nueva posición» para generarlo.",
+      profileNone: "Esta posición se creó sin perfil. Vuelve a pegar la oferta con «Pegar una oferta de empleo» para generarlo.",
       profileReqs: "Requisitos clave de la oferta", profileNoPractice: "sin practicar",
       jdFitLabel: "Encaje con la oferta", guideLink: "Guía",
+      jdOpenLabel: "Pegar una oferta de empleo", jdOpenHint: "Practica con preguntas hechas a medida para un puesto concreto.",
       statAttempts: "intentos", statAvgWords: "palabras/med.", statAvgScore: "nota/med.",
       addPosition: "+ Nueva posición",
       jdNamePh: "Nombre del puesto y empresa (ej. «Head of FP&A, Adyen»)",
@@ -865,11 +869,12 @@
       jdGo: "Generate questions with this profile", jdBack: "Back",
       fixProfile: "Not right? Change it",
       profileTitle: "Role profile",
-      profilePresetNote: "Generic practice position, with no job posting attached. Use \u00abNew position\u00bb to paste a posting and the evaluation will be made against that specific role.",
+      profilePresetNote: "Generic practice position, with no job posting attached. Use \u00abPaste a job posting\u00bb to add a posting and the evaluation will be made against that specific role.",
       profileOverride: "Select what applies. It is used for the next questions and evaluations.",
-      profileNone: "This position was created without a profile. Paste the posting again with \u00abNew position\u00bb to generate it.",
+      profileNone: "This position was created without a profile. Paste the posting again with \u00abPaste a job posting\u00bb to generate it.",
       profileReqs: "Key requirements in the posting", profileNoPractice: "not practiced yet",
       jdFitLabel: "Fit with the posting", guideLink: "Guide",
+      jdOpenLabel: "Paste a job posting", jdOpenHint: "Practice with questions tailored to a specific role.",
       statAttempts: "attempts", statAvgWords: "avg words", statAvgScore: "avg score",
       addPosition: "+ New position",
       jdNamePh: "Role and company (e.g. «Head of FP&A, Adyen»)",
@@ -1258,6 +1263,7 @@
     $("fbImproveLabel").textContent = T("improveLabel");
     $("fbJdFitLabel").textContent = T("jdFitLabel");
     $("lnkGuide").textContent = T("guideLink"); if($("lnkGuideTop")) $("lnkGuideTop").textContent = T("guideLink");
+    $("btnOpenJd").textContent = T("jdOpenLabel"); $("txtJdOpenHint").textContent = T("jdOpenHint");
     renderJdReview();
     renderTrackChips();
     updateMeter();
@@ -1357,11 +1363,6 @@
       chip.onclick = function(){ selectTrack(id); };
       wrap.appendChild(chip);
     });
-    var addChip = document.createElement("button");
-    addChip.className = "chip add";
-    addChip.textContent = T("addPosition");
-    addChip.onclick = function(){ $("jdForm").classList.toggle("open"); };
-    wrap.appendChild(addChip);
   }
 
   // ----- Selection chips (level / type), used in the posting review and in the profile panel -----
@@ -2384,6 +2385,7 @@
       }).then(function(){ $("btnJdGo").disabled = false; });
     };
     $("btnFixProfile").onclick = openProfilePanel;
+    $("btnOpenJd").onclick = function(){ $("jdForm").classList.toggle("open"); };
 
     pickQuestion(false).then(renderQuestion);
 
